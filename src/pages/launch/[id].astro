@@ -1,0 +1,51 @@
+---
+import { getLaunchById, getLaunches } from "../../services/spacex";
+import Layout from "../../layouts/Layout.astro";
+
+const { id } = Astro.params;
+
+let launch;
+if(id) {
+    launch = await getLaunchById({id});
+}
+
+// CON MODO DE TIPO OUTPUT EN ASTRO.CONFIG.JS EN STATIC, HARIA FALTA GENERAR LAS IDS
+
+export async function getStaticPaths(){
+
+    //Llamar API externa para recuperar todas las ids estaticamente en tiempo de compilacion
+    //Asi sabriamos todas las ids que quiere generar
+
+    //CORRECTO SI TENEMOS UN NUMERO FINITO Y CONOCIDO DE IDS ANTES DE QUE EL USUARIO PUEDA NAVEGAR
+
+    const launches = await getLaunches();
+    return launches.map(launch => ({
+        params: {id: launch.id}
+    }));
+
+
+    //SI NO, LO QUE PODEMOS HACER ES GENERAR LAS IDS A MEDIDA QUE EL USUARIO NAVEGA
+    // return [
+    //     {params: {id: "5eb87cdaffd86e000604b32b"}},
+    // ];
+};
+
+// AHORA CON MODO SERVERSIDE RENDER 
+// FUNCIONARIA EN EL SERVIDOR Y NO HARIA FALTA LA GENERACION ESTATICA DE LAS IDS
+export const prerender =  true; 
+
+//Si lo hacemos en el servidor podemos acceder a las Cookies (EJEMPLO)
+// if(Astro.cookies.get('user')){
+//     Astro.redirect('/login');
+// }
+
+---
+<Layout title={`Lanzamiento ${id}`}>
+
+    <article class="flex gap-y-4 flex-col">
+        <img class="w-52 h-auto" src={launch?.links?.patch.small} alt="Imagen del lanzamiento"/>
+        <h2 class="text-4xl text-white font-bold">{launch?.name}</h2>
+        <p class=" text-white text-lg">{launch?.details}</p>
+    </article>
+
+</Layout>
